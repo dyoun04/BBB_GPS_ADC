@@ -1,0 +1,89 @@
+/dts-v1/;
+/plugin/;
+
+/{
+    compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+    part-number = "GPS-PRU";
+    version = "00A0";
+
+    exclusive-use = "P9.11", "P9.13", "P9.15", "P8.11", "P8.15", "P8.16", "P8.27", "P8.28", "uart4", "pru1", "pru0";
+
+    fragment@0 {
+        target=<&ocp>;
+        __overlay__ {
+            // UART 4
+            P9_11_pinmux{status="disabled";};
+            P9_13_pinmux{status="disabled";};
+            // PPS
+            P9_15_pinmux{status="disabled";};
+            // PRU0
+            P8_11_pinmux{status="disabled";};
+            P8_15_pinmux{status="disabled";};
+            P8_16_pinmux{status="disabled";};
+            // PRU1
+            P8_27_pinmux{status="disabled";};
+            P8_28_pinmux{status="disabled";};
+        };
+    };
+
+    fragment@1 {
+        target = <&am33xx_pinmux>;
+        __overlay__ {
+            bb_uart4_pins: pinmux_bb_uart4_pins {
+                pinctrl-single,pins = <
+                    0x070 0x26 // P9.11 UART4_RX, MODE 6 | INPUT | PULLDOWN
+                    0x074 0x06 // P9.11 UART4_TX, MODE 6 | OUTPUT | PULLDOWN
+                >;
+            };
+
+            bb_gps_pps_pins: pinmux_bb_gps_pps_pins {
+                pinctrl-single,pins = <
+                    0x040 0x27 // P9.15 GPIO, MODE 7 | INPUT | PULLDOWN
+                >;
+            };
+
+            pru_pins: pinmux_pru_pins {
+                pinctrl-single,pins = <
+                    0x034 0x06 // P8.11 pru0out, MODE 6 | OUTPUT | PULLDOWN
+                    0x03c 0x26 // P8.15 pru0in, MODE 6 | INPUT | PULLDOWN
+                    0x038 0x26 // P8.16 pru0in, MODE 6 | INPUT | PULLDOWN
+
+                    0x0e0 0x05 // P8.27 pru1out, MODE 5 | OUTPUT | PULLDOWN
+                    0x0e8 0x26 // P8.28 pru1in, MODE 6 | INPUT | PULLDOWN
+                >;
+            };
+        };
+    };
+
+    fragment@2 {
+        target = <&uart4>;
+        __overlay__ {
+            status = "okay";
+            pinctrl-names = "default";
+            pinctrl-0 = <&bb_uart4_pins>;
+        };
+    };
+
+    fragment@3 {
+        target-path = "/";
+        __overlay__ {
+            gps_pps {
+                status = "okay";
+                compatible = "pps-gpio";
+                pinctrl-names = "default";
+                pinctrl-0 = <&bb_gps_pps_pins>;
+                gpios = <&gpio1 16 0>;
+            }; 
+        };
+    };
+
+    fragment@4 {  
+      target = <&pruss>;
+      __overlay__ {
+         status = "okay";
+         pinctrl-names = "default";
+         pinctrl-0 = <&pru_pins>;
+      };
+   };
+};
