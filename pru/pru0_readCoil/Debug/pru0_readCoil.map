@@ -1,7 +1,7 @@
 ******************************************************************************
                      PRU Linker PC v2.3.3                      
 ******************************************************************************
->> Linked Thu Mar 21 00:18:21 2024
+>> Linked Thu Mar 21 14:14:43 2024
 
 OUTPUT FILE NAME:   <pru0_readCoil.out>
 ENTRY POINT SYMBOL: "_c_int00_noinit_noargs"  address: 00000000
@@ -12,7 +12,7 @@ MEMORY CONFIGURATION
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
 PAGE 0:
-  PRU_IMEM              00000000   00002000  000000a0  00001f60  RWIX
+  PRU_IMEM              00000000   00002000  000000d4  00001f2c  RWIX
 
 PAGE 1:
   PRU_DMEM_0_1          00000000   00002000  00000004  00001ffc  RWIX
@@ -60,10 +60,10 @@ section   page    origin      length       input sections
 *          0    00000000    0000001c     
                   00000000    0000001c     rtspruv3_le.lib : boot.c.obj (.text:_c_int00_noinit_noargs)
 
-.text      0    0000001c    00000084     
-                  0000001c    00000074     main.obj (.text:main)
-                  00000090    00000008     rtspruv3_le.lib : exit.c.obj (.text:abort)
-                  00000098    00000008                     : exit.c.obj (.text:loader_exit)
+.text      0    0000001c    000000b8     
+                  0000001c    000000a8     main.obj (.text:main)
+                  000000c4    00000008     rtspruv3_le.lib : exit.c.obj (.text:abort)
+                  000000cc    00000008                     : exit.c.obj (.text:loader_exit)
 
 .stack     1    00000000    00000004     UNINITIALIZED
                   00000000    00000004     rtspruv3_le.lib : boot.c.obj (.stack)
@@ -75,9 +75,9 @@ MODULE SUMMARY
        Module         code   ro data   rw data
        ------         ----   -------   -------
     .\
-       main.obj       116    0         0      
+       main.obj       168    0         0      
     +--+--------------+------+---------+---------+
-       Total:         116    0         0      
+       Total:         168    0         0      
                                               
     C:\ti\ccs1120\ccs\tools\compiler\ti-cgt-pru_2.3.3\lib\rtspruv3_le.lib
        boot.c.obj     28     0         0      
@@ -87,7 +87,7 @@ MODULE SUMMARY
                                               
        Stack:         0      0         4      
     +--+--------------+------+---------+---------+
-       Grand Total:   160    0         4      
+       Grand Total:   212    0         4      
 
 
 SEGMENT ATTRIBUTES
@@ -101,7 +101,7 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 page  address   name                         
 ----  -------   ----                         
-0     00000098  C$$EXIT                      
+0     000000cc  C$$EXIT                      
 abs   481cc000  __PRU_CREG_BASE_DCAN0        
 abs   481d0000  __PRU_CREG_BASE_DCAN1        
 abs   80000000  __PRU_CREG_BASE_DDR          
@@ -171,7 +171,7 @@ abs   00000004  __TI_STACK_SIZE
 abs   ffffffff  __c_args__                   
 0     00000000  _c_int00_noinit_noargs       
 1     00000000  _stack                       
-0     00000090  abort                        
+0     000000c4  abort                        
 0     0000001c  main                         
 
 
@@ -181,8 +181,8 @@ page  address   name
 ----  -------   ----                         
 0     00000000  _c_int00_noinit_noargs       
 0     0000001c  main                         
-0     00000090  abort                        
-0     00000098  C$$EXIT                      
+0     000000c4  abort                        
+0     000000cc  C$$EXIT                      
 1     00000000  _stack                       
 1     00000004  __TI_STACK_END               
 abs   00000000  __PRU_CREG_BASE_PRU_DMEM_0_1 
