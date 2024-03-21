@@ -2,7 +2,7 @@
 ;
 ;	Author: David Youn, dty003@bucknell.edu
 ;
-;	File: main.asm
+;	File: main.asm - pru1_clk
 ;
 ;	Description: Code for PRU1 to drive ADC with CLK signal.
 ;
@@ -13,21 +13,24 @@
 ;*****************************************************************************
 
 ; Define physical constants
-DELAY		.set	1
+DELAY			.set	1
 
 ; Define IO registers
-CLK_MASK	.set	(1<<0)		; P8.27 - r30.t8
-PPS_MASK	.set	(1<<2)		; P8.28 - r31.t10
+CLK_MASK		.set	(1<<0)		; P8.27 - r30.t8
+PPS_MASK		.set	(1<<2)		; P8.28 - r31.t10
 
 ; Define addresses
-COUNTER_ADR	.set	0x00000000
+PRU1_MEM_BASE	.set	0x00000000
+DELAY_OFFSET	.set	0x00000000
+COUNTER_OFFSET	.set	0x00000004
 
 ; Define general purpose registers
-REG_CNT_ADR	.set	r0
-REG_DELAY	.set	r1
-REG_PPS_NOW	.set	r2
-REG_PPS_OLD .set	r3
-REG_COUNTER	.set	r4
+REG_PRU1_BASE	.set	r0
+REG_DELAY_VAL	.set	r1
+REG_DELAY		.set	r2
+REG_PPS_NOW		.set	r3
+REG_PPS_OLD 	.set	r4
+REG_COUNTER		.set	r5
 
 ;*****************************************************************************
 ;                                  Main Loop
@@ -39,12 +42,14 @@ REG_COUNTER	.set	r4
 ||main||:
 
 	; Reset registers and load constants
-	ZERO	&r0, 20
+	ZERO	&r0, 24
 	CLR		r30.b1, r30.b1, CLK_MASK			; clear clk
-	LDI		REG_CNT_ADR, COUNTER_ADR
+	LDI		REG_PRU1_BASE, PRU1_MEM_BASE
 	; Load PPS
 	AND		REG_PPS_NOW.b0, r31.b1, PPS_MASK
 	MOV		REG_PPS_OLD, REG_PPS_NOW
+	; Load delay from ARM
+	LBBO	&REG_DELAY_VAL, REG_PRU1_BASE, DELAY_OFFSET, 4
 
 ; Loop forever
 TRUE:
@@ -57,7 +62,7 @@ TRUE:
 	; check for rising edge of pps
 	QBEQ	WAIT_1, REG_PPS_NOW, REG_PPS_OLD
 	QBNE	WAIT_2, REG_PPS_NOW, PPS_MASK
-	SBBO	&REG_COUNTER, REG_CNT_ADR, 0, 4
+	SBBO	&REG_COUNTER, REG_PRU1_BASE, COUNTER_OFFSET, 4
 	ZERO	&REG_COUNTER, 4
 	QBA		CONTINUE
 
@@ -71,7 +76,7 @@ WAIT_4:
 	QBA		CONTINUE
 
 CONTINUE: 	; load delay
-	LDI		REG_DELAY, DELAY
+	MOV		REG_DELAY, REG_DELAY_VAL
 
 DELAY_LOOP:	; loop until delay is finished
 	SUB		REG_DELAY, REG_DELAY, 1

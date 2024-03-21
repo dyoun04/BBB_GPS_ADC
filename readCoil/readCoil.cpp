@@ -20,8 +20,11 @@ using namespace std;
 #define VRef 4.096
 #define sampRate 384
 
-// PRU defined constants
-#define averaging 8
+// CLK speed for sampling frequency
+// f = ((2^-17)(delay-1) + 50us)^-1
+// delay = (f^-1 - 50us)2^17 + 1
+const uint32_t DELAY = 50;
+
 // Memory address bases
 #define MAP_SIZE 4096UL
 #define MAP_MASK (MAP_SIZE - 1)
@@ -36,8 +39,8 @@ const int wordsPerBuf = 200;
 const int pps_pin = 48;
 
 // PRU firmware
-const string PRU0_PATH = "pru/pru_readData.out";
-const string PRU1_PATH = "pru/pru1.out";
+const string PRU0_PATH = "pru/pru0_readCoil.out";
+const string PRU1_PATH = "pru/pru1_clk.out";
 
 // Time
 const int time_len = 10;
@@ -120,7 +123,8 @@ int main(void) {
     }
     fflush(stdout);
     virt_addr = map_base + (PRU1_MEM & MAP_MASK);
-    uint32_t *pru1Time_base = (uint32_t *) virt_addr;
+    uint32_t *pru1Delay = (uint32_t *) virt_addr;
+    uint32_t *pru1Time_base = (uint32_t *) virt_addr + 1;
 
     // SD card business
     if(system(("ls " + SD_PATH).c_str()) != 0) {
@@ -167,8 +171,8 @@ int main(void) {
     int vecIndex = 0;
     int dSetCount = 0;
 
-    // populate time samples and start PRUs
-    *pru1Time_base = 0;
+    // load delay to PRU1, populate time samples, and start PRUs
+    *pru1Delay = DELAY;
     *pru0Rdy_base = 1;
     pps = readGPIO(pps_pin);
     last_pps = pps;
@@ -189,7 +193,7 @@ int main(void) {
             for(i=0; i<time_len; i++) {
                 dt += times[i];
             } // for
-            dt *= sampRate * averaging;
+            dt *= sampRate * 2;
             dt /= time_len;
             printf("%.15f\n", dt);
             
@@ -246,7 +250,7 @@ int main(void) {
             for(i=0; i<time_len; i++) {
                 dt += times[i];
             } // for
-            dt *= sampRate * averaging;
+            dt *= sampRate * 2;
             dt /= time_len;
             printf("%.15f\n", dt);
         } // if
