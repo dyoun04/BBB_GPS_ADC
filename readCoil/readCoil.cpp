@@ -128,12 +128,6 @@ int main(void) {
     } // create path if doesn't exist
     system(("mount /dev/mmcblk0p1 " + SD_PATH).c_str());
 
-    // HDF5 file
-    H5Easy::File file(SD_PATH + "Site_A.h5", H5Easy::File::Overwrite);
-    vector<vector<double>> h5Data(2, vector<double>(dataLen));
-    int vecIndex = 0;
-    int dSetCount = 0;
-
     // buffer vars
     int bufReady = *pru0Data_base;
     uint32_t buf[BUFF_SIZE / 24];
@@ -166,6 +160,12 @@ int main(void) {
     
     // wait for pps
     while(pps == 0) {pps = readGPIO(pps_pin);}
+
+    // HDF5 file
+    H5Easy::File file(SD_PATH + "Site_A.h5", H5Easy::File::Overwrite);
+    vector<vector<double>> h5Data(2, vector<double>(dataLen));
+    int vecIndex = 0;
+    int dSetCount = 0;
 
     // populate time samples and start PRUs
     *pru1Time_base = 0;
