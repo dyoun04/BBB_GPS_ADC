@@ -1,7 +1,7 @@
 ******************************************************************************
                      PRU Linker PC v2.3.3                      
 ******************************************************************************
->> Linked Thu Mar 21 14:14:43 2024
+>> Linked Thu Mar 21 15:34:07 2024
 
 OUTPUT FILE NAME:   <pru0_readCoil.out>
 ENTRY POINT SYMBOL: "_c_int00_noinit_noargs"  address: 00000000

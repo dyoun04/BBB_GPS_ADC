@@ -13,7 +13,7 @@
 ;*****************************************************************************
 
 ; Define physical constants
-SCLK_PAUSE	.set	150
+SCLK_PAUSE	.set	800
 SCLK_DELAY	.set	50
 SCLK_CYCLES	.set 	24		; 24-bit words
 
