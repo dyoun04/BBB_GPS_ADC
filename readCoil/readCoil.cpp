@@ -18,12 +18,12 @@ using namespace std;
 
 // Physical constants
 #define VRef 4.096
-#define sampRate 384
+#define sampRate 384        // ADC subdivision (i.e. CLK of 384 Hz -> sampling rate of 1 Hz)
 
 // CLK speed for sampling frequency
 // f = ((2^-17)(delay-1) + 50us)^-1
 // delay = (f^-1 - 50us)2^17 + 1
-const uint32_t DELAY = 50;
+const uint32_t DELAY = 1;
 
 // Memory address bases
 #define MAP_SIZE 4096UL
@@ -43,7 +43,7 @@ const string PRU0_PATH = "pru/pru0_readCoil.out";
 const string PRU1_PATH = "pru/pru1_clk.out";
 
 // Time
-const int time_len = 10;
+const int time_len = 60;
 
 // SD card path
 const string SD_PATH = "/home/debian/examples/SDcard/";
@@ -165,23 +165,19 @@ int main(void) {
     // wait for pps
     while(pps == 0) {pps = readGPIO(pps_pin);}
 
-    // HDF5 file
-    H5Easy::File file(SD_PATH + "Site_A.h5", H5Easy::File::Overwrite);
-    vector<vector<double>> h5Data(2, vector<double>(dataLen));
-    int vecIndex = 0;
-    int dSetCount = 0;
-
     // load delay to PRU1, populate time samples, and start PRUs
     *pru1Delay = DELAY;
     *pru0Rdy_base = 1;
-    pps = readGPIO(pps_pin);
-    last_pps = pps;
     PRU_file.open("/sys/class/remoteproc/remoteproc2/state");
     PRU_file << "start";
     PRU_file.close();
     PRU_file.open("/sys/class/remoteproc/remoteproc1/state");
     PRU_file << "start";
     PRU_file.close();
+    pps = readGPIO(pps_pin);
+    last_pps = pps;
+    while(pps == 0) {pps = readGPIO(pps_pin);}
+    last_pps = pps;
     while(times[time_len - 1] == 0) {
         // Checks for rising edge of PPS
         pps = readGPIO(pps_pin);
@@ -215,6 +211,12 @@ int main(void) {
     PRU_file << "start";
     PRU_file.close();
 
+    // HDF5 file
+    H5Easy::File file(SD_PATH + "Site_A_" + std::to_string(time_base) + ".h5", H5Easy::File::Overwrite);
+    vector<vector<double>> h5Data(2, vector<double>(dataLen));
+    int vecIndex = 0;
+    int dSetCount = 0;
+
     pps = readGPIO(pps_pin);
     last_pps = pps;
     // ---- loop forever ----
@@ -235,6 +237,11 @@ int main(void) {
             } // for
             if(vecIndex >= dataLen) {
                 vecIndex = 0;
+                if(dSetCount == 600) {
+                    H5Easy::File newFile(SD_PATH + "Site_A_" + std::to_string(h5Data[0][0]) + ".h5", H5Easy::File::Overwrite);
+                    file = newFile;
+                    dSetCount = 0;
+                }
                 H5Easy::dump(file, "dSet_" + to_string(dSetCount), h5Data);
                 dSetCount++;
             } // if
